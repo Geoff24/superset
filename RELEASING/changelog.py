@@ -298,7 +298,7 @@ class GitLogs:
         current_git_ref = self._git_get_current_head()
         self._git_checkout(self._git_ref)
         output = subprocess.check_output(  # noqa: S603
-            ["git", "--no-pager", "log", '--pretty=format:"%h|%an|%ae|%ad|%s|"'],  # noqa: S607
+            ["git", "--no-pager", "log", "--pretty=format:%h|%an|%ae|%ad|%s|"],  # noqa: S607
             text=True,
         ).split("\n")
         # revert to git ref, let's be nice
