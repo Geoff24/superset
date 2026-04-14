@@ -56,7 +56,7 @@ class Requirement:
             if self.version_post_process:
                 version = self.version_post_process(version)
             return version.split()[-1]
-        except subprocess.CalledProcessError:
+        except (subprocess.CalledProcessError, FileNotFoundError):
             return None
 
     def check_version(self) -> str:
@@ -115,7 +115,7 @@ def get_docker_platform() -> str:
         if "Docker Desktop" in output:
             return f"Docker Platform: {output} ({platform.system()})"
         return f"Docker Platform: {output}"
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         return "Docker Platform: ❌ Not Detected"
 
 
