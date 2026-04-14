@@ -16,6 +16,7 @@
 import csv as lib_csv
 import os
 import re
+import subprocess
 import sys
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -271,14 +272,22 @@ class GitLogs:
 
     @staticmethod
     def _git_get_current_head() -> str:
-        output = os.popen("git status | head -1").read()  # noqa: S605, S607
-        match = re.match("(?:HEAD detached at|On branch) (.*)", output)
+        output = subprocess.check_output(  # noqa: S603
+            ["git", "status"],  # noqa: S607
+            text=True,
+        )
+        first_line = output.split("\n", 1)[0]
+        match = re.match("(?:HEAD detached at|On branch) (.*)", first_line)
         if not match:
             return ""
         return match.group(1)
 
     def _git_checkout(self, git_ref: str) -> None:
-        os.popen(f"git checkout {git_ref}").read()  # noqa: S605
+        subprocess.check_output(  # noqa: S603
+            ["git", "checkout", git_ref],  # noqa: S607
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
         current_head = self._git_get_current_head()
         if current_head != git_ref:
             print(f"Could not checkout {git_ref}")
@@ -288,11 +297,10 @@ class GitLogs:
         # let's get current git ref so we can revert it back
         current_git_ref = self._git_get_current_head()
         self._git_checkout(self._git_ref)
-        output = (
-            os.popen('git --no-pager log --pretty=format:"%h|%an|%ae|%ad|%s|"')  # noqa: S605, S607
-            .read()
-            .split("\n")
-        )
+        output = subprocess.check_output(  # noqa: S603
+            ["git", "--no-pager", "log", '--pretty=format:"%h|%an|%ae|%ad|%s|"'],  # noqa: S607
+            text=True,
+        ).split("\n")
         # revert to git ref, let's be nice
         self._git_checkout(current_git_ref)
         return output
